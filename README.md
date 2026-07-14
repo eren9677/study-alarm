@@ -5,12 +5,12 @@ Sessiz, tam ekran kırmızı bir görsel alarm. Kütüphane gibi ses çıkarıla
 ## File Structure
 
 ```
-~/Desktop/çalışma alarmı/
-├── alarm.py          # Main Python script (accepts time + management args)
-├── alarm.html        # Fullscreen red page opened by Safari
-├── study_alarm       # Shell wrapper — single entry point for everything
-├── install.sh        # One-click install (symlinks to ~/bin)
-└── README.md         # This file
+study-alarm/
+├── alarm.py          # Main Python script
+├── alarm.html        # Fullscreen red page
+├── study_alarm       # Shell wrapper
+├── install.sh        # One-click installer
+└── README.md
 ```
 
 Runtime files:
@@ -19,12 +19,19 @@ Runtime files:
 
 ## Install
 
+### Tek komutla (önerilen)
 ```bash
-cd ~/Desktop/çalışma\ alarmı
+curl -fsSL https://raw.githubusercontent.com/eren9677/study-alarm/master/install.sh | bash
+```
+
+### Manuel
+```bash
+git clone https://github.com/eren9677/study-alarm.git
+cd study-alarm
 ./install.sh
 ```
 
-This creates `~/bin/study_alarm` symlink and adds `~/bin` to your PATH. Open a new terminal and run `study_alarm --help` to verify.
+Her iki yöntem de dosyaları `~/Library/Application Support/study_alarm/` altına kurar, `~/bin/study_alarm` symlink'i oluşturur ve PATH'e ekler. Yeni terminal açıp `study_alarm --help` ile test edin.
 
 ## Requirements
 
