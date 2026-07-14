@@ -113,7 +113,14 @@ while [ $# -gt 0 ]; do
                 echo "Calisan alarm durduruldu (PID: $PID)."
             fi
             [ -L "$LINK" ] && rm -f "$LINK" && echo "Symlink silindi: $LINK"
-            [ -d "$INSTALL_DIR" ] && rm -rf "$INSTALL_DIR" && echo "Dosyalar silindi: $INSTALL_DIR"
+            if [ -d "$INSTALL_DIR" ]; then
+                if [ -f "$INSTALL_DIR/alarm.py" ] && [ -f "$INSTALL_DIR/alarm.html" ] && [ -f "$INSTALL_DIR/study_alarm" ]; then
+                    rm -rf "$INSTALL_DIR"
+                    echo "Dosyalar silindi: $INSTALL_DIR"
+                else
+                    echo "UYARI: $INSTALL_DIR study_alarm dizini gibi gorunmuyor, silinmedi."
+                fi
+            fi
             for rc in "$HOME/.zshrc" "$HOME/.bash_profile" "$HOME/.profile"; do
                 if [ -f "$rc" ] && grep -q 'export PATH="$HOME/bin:$PATH"' "$rc" 2>/dev/null; then
                     sed -i '' '\|export PATH="\$HOME/bin:\$PATH"|d' "$rc"
