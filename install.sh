@@ -15,6 +15,10 @@ command -v python3 >/dev/null 2>&1 || {
     exit 1
 }
 
+if [ -L "$LINK" ] || [ -d "$INSTALL_DIR" ]; then
+    echo "study_alarm zaten kurulu. Güncelleniyor..."
+fi
+
 mkdir -p "$INSTALL_DIR"
 curl -fsSL "$REPO/study_alarm"  -o "$INSTALL_DIR/study_alarm"
 curl -fsSL "$REPO/alarm.py"     -o "$INSTALL_DIR/alarm.py"
@@ -25,13 +29,14 @@ mkdir -p "$BIN_DIR"
 rm -f "$LINK"
 ln -s "$INSTALL_DIR/study_alarm" "$LINK"
 
-if [[ ":$PATH:" != *":$BIN_DIR:"* ]]; then
-    SHELL_RC=""
-    case "$SHELL" in
-        */zsh)  SHELL_RC="$HOME/.zshrc" ;;
-        */bash) SHELL_RC="$HOME/.bash_profile" ;;
-        *)      SHELL_RC="$HOME/.profile" ;;
-    esac
+SHELL_RC=""
+case "$SHELL" in
+    */zsh)  SHELL_RC="$HOME/.zshrc" ;;
+    */bash) SHELL_RC="$HOME/.bash_profile" ;;
+    *)      SHELL_RC="$HOME/.profile" ;;
+esac
+
+if ! grep -q "export PATH=\"\$HOME/bin:\$PATH\"" "$SHELL_RC" 2>/dev/null; then
     echo "export PATH=\"\$HOME/bin:\$PATH\"" >> "$SHELL_RC"
     echo "PATH'a ~/bin eklendi ($SHELL_RC). Yeni terminal açın veya 'source $SHELL_RC' yapın."
 fi
