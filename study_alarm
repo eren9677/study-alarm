@@ -42,7 +42,7 @@ SEÇENEKLER:
 NOT:
   - Terminali kapatabilirsin, alarm arka planda çalışır
   - caffeinate otomatik uygulanır, Mac uykuya geçmez
-  - Alarm ateşlenince ESC ile kapat
+  - Alarm ateşlenince Cmd+W ile kapat
 EOF
 }
 

@@ -1,95 +1,76 @@
-# Study Alarm (Sessiz Görsel Alarm)
+# study_alarm — Sessiz Görsel Alarm
 
-Sessiz, tam ekran kırmızı bir görsel alarm. Kütüphane gibi ses çıkarılamayan ortamlarda, belirlenen saatte ekranı komple kırmızı yaparak uyarır. Slayt/ders çalışırken dalmamak için.
+Kütüphane, ofis gibi ses çıkarılamayan ortamlarda, belirlenen saatte Safari'de tam ekran kırmızı sayfa açarak görsel uyarı verir.
 
-## File Structure
+## Kurulum
 
-```
-study-alarm/
-├── alarm.py          # Main Python script
-├── alarm.html        # Fullscreen red page
-├── study_alarm       # Shell wrapper
-├── install.sh        # One-click installer
-└── README.md
-```
-
-Runtime files:
-- `/tmp/study_alarm.pid` — PID of running alarm (auto-cleaned on completion)
-- `/tmp/study_alarm.log` — Countdown output (persists for debugging, cleared on `--stop`)
-
-## Install
-
-### Tek komutla (önerilen)
 ```bash
 curl -fsSL https://raw.githubusercontent.com/eren9677/study-alarm/master/install.sh | bash
 ```
 
-### Manuel
-```bash
-git clone https://github.com/eren9677/study-alarm.git
-cd study-alarm
-./install.sh
-```
+Dosyalar `~/Library/Application Support/study_alarm/` altına kurulur, `~/bin/study_alarm` symlink'i oluşturulur. Yeni terminal açıp `study_alarm --help` ile test edin.
 
-Her iki yöntem de dosyaları `~/Library/Application Support/study_alarm/` altına kurar, `~/bin/study_alarm` symlink'i oluşturur ve PATH'e ekler. Yeni terminal açıp `study_alarm --help` ile test edin.
+Kaldırmak için: `study_alarm --uninstall`
 
-## Requirements
-
-- macOS (uses Safari + AppleScript for fullscreen)
-- Python 3
-- Safari must have AppleScript/System Events permissions (macOS may prompt on first run)
-- No external Python packages needed (stdlib only)
-
-## Usage
+## Kullanım
 
 ```bash
-study_alarm 16:25          # Set alarm for 16:25
-study_alarm 16.25          # Same (dot or colon)
-study_alarm --in 15        # Set alarm 15 minutes from now
-study_alarm --in 70        # Set alarm 70 minutes (1h 10m) from now
-study_alarm --test         # Fire a 5-second test alarm
-study_alarm --stop         # Stop the currently running alarm
-study_alarm --status       # Check alarm status / remaining time
-study_alarm --help         # Show all commands
-study_alarm 16:25 --force  # Override any existing alarm
+study_alarm 16:25                      # Saat 16:25'te çal
+study_alarm 16.25                      # Nokta veya iki nokta fark etmez
+study_alarm --in 15                    # 15 dakika sonra çal
+study_alarm --in 70                    # 1 saat 10 dakika sonra çal
+study_alarm --message "Toplantı!" 16:30  # Özel mesajlı alarm
+study_alarm --test                     # 5 saniye sonra test et
+study_alarm --status                   # Durumu / kalan süreyi göster
+study_alarm --stop                     # Çalışan alarmı durdur
+study_alarm --uninstall                # Programı tamamen kaldır
+study_alarm --help                     # Tüm komutları listele
+study_alarm 16:25 --force              # Mevcut alarmı iptal edip yenisini kur
 ```
 
-The command **auto-backgrounds** — you can close the terminal immediately. `caffeinate` is applied automatically to prevent Mac from sleeping.
+## Gereksinimler
 
-`--in N` mode accepts a minute value and automatically calculates the target time (e.g. `--in 70` → 1h 10m). The confirmation message shows both the target time and how many minutes remain.
+- macOS (Safari + Python 3 yüklü gelir)
+- Başka hiçbir şey — sıfır bağımlılık, sıfır pip paketi
 
-When the alarm fires, press **ESC** to close the fullscreen Safari window.
+## Nasıl Çalışır
 
-## How It Works
+1. `study_alarm` bash wrapper'ı argümanları ayrıştırır, zamanı hesaplar
+2. `alarm.py` arka planda geri sayım yapar (`nohup` + `caffeinate`)
+3. Hedef saatte `alarm.html` şablonuna mesaj yerleştirilir, geçici dosya Safari'de açılır
+4. Alarm sayfası: kırmızı arka plan, çalışma saati, özel mesaj
+5. Kapatmak için **Cmd+W** — ses yok, sadece görsel
 
-1. Shell wrapper parses flags and manages the alarm lifecycle (start / stop / status)
-2. Python script calculates remaining time, sleeps with a countdown
-3. At target time, opens `alarm.html` in Safari — full red screen with alarm title,
-   motivational message, and live clock
-4. AppleScript sends `Cmd+Shift+F` to trigger Safari fullscreen
-5. PID file cleaned up automatically; log file persists for debugging (`--stop` clears both)
+Terminali hemen kapatabilirsiniz, alarm arka planda çalışmaya devam eder.
 
-No sound is produced at any point — purely visual.
+## Hata Durumları
 
-## Error Handling
-
-Both the shell wrapper and Python script validate input before launching:
-
-| Input | Result |
+| Girdi | Sonuç |
 |---|---|
-| `study_alarm abc` | `HATA: Gecersiz saat formati` |
-| `study_alarm 25:99` | `HATA: Saat 0-23 arasinda olmali` |
-| `study_alarm 16:` | `HATA: Gecersiz saat formati` |
-| `study_alarm 08:00` (past) | `HATA: gecmiste kaldi` |
-| `study_alarm 16:25 16:30` | `HATA: Birden fazla saat` |
-| `study_alarm --xyz` | `HATA: Bilinmeyen secenek` |
-| `study_alarm --force` | `HATA: --force tek basina kullanilamaz` |
-| `study_alarm --test 16:25` | `HATA: --test ile saat birlikte kullanilamaz` |
-| `study_alarm --in` | `HATA: --in icin dakika degeri gerekli` |
-| `study_alarm --in abc` | `HATA: --in icin gecerli bir sayi girin` |
-| `study_alarm --in 0` | `HATA: --in icin pozitif bir sayi girin` |
-| `study_alarm --in 15 16:25` | `HATA: --in ile saat birlikte kullanilamaz` |
-| Missing `alarm.html` | `HATA: HTML dosyasi bulunamadi` |
-| AppleScript fails | `UYARI: Tam ekran yapilamadi` (alarm still works) |
+| `study_alarm abc` | Geçersiz saat formatı |
+| `study_alarm 25:99` | Saat 0-23, dakika 0-59 arasında olmalı |
+| `study_alarm 08:00` (geçmiş) | Geçmişte kaldı hatası |
+| `study_alarm 16:25 16:30` | Birden fazla saat girilemez |
+| `study_alarm --in abc` | Sayı girin, harf kabul edilmez |
+| `study_alarm --in` | Dakika değeri gerekli |
+| `study_alarm --in 0` | Pozitif sayı girin |
+| `study_alarm --in 1500` | En fazla 1440 dakika (24 saat) |
+| `study_alarm --in 15 16:25` | --in ile saat birlikte kullanılamaz |
+| `study_alarm --in 15 --test` | --in ile --test birlikte kullanılamaz |
+| `study_alarm --xyz` | Bilinmeyen seçenek |
 
-`--test` and `--in` modes skip the past-time check. `--in` also handles midnight wrap-around (e.g. `--in 15` at 23:50 sets alarm for 00:05).
+## Dosya Yapısı
+
+```
+study-alarm/
+├── study_alarm       # Bash wrapper (tek giriş noktası)
+├── alarm.py          # Python: geri sayım + Safari'yi açma
+├── alarm.html        # HTML: kırmızı tam ekran sayfası
+├── install.sh        # Tek komutla kurulum
+└── uninstall.sh      # Alternatif kaldırma (manuel kullanım için)
+```
+
+Çalışma zamanı dosyaları (`/tmp/`):
+- `study_alarm.pid` — çalışan alarmın PID'i
+- `study_alarm.log` — geri sayım çıktısı
+- `study_alarm.lock` — eşzamanlı çalıştırmayı önleyen kilit
