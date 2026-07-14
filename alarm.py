@@ -85,7 +85,7 @@ if not os.path.isfile(html_path):
     cleanup_pid(args.pid_file)
     fail(f"HTML dosyasi bulunamadi: {html_path}")
 
-message = html.escape(args.message) if args.message else "Belirlenen saat geldi — mola ver, kalk, hareket et."
+message = html.escape(args.message.strip()) if args.message and args.message.strip() else "Belirlenen saat geldi — mola ver, kalk, hareket et."
 
 with open(html_path, "r", encoding="utf-8") as f:
     html_content = f.read()
