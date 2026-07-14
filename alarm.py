@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import html
 import os
 import re
 import subprocess
@@ -84,7 +85,7 @@ if not os.path.isfile(html_path):
     cleanup_pid(args.pid_file)
     fail(f"HTML dosyasi bulunamadi: {html_path}")
 
-message = args.message if args.message else "Belirlenen saat geldi — mola ver, kalk, hareket et."
+message = html.escape(args.message) if args.message else "Belirlenen saat geldi — mola ver, kalk, hareket et."
 
 with open(html_path, "r", encoding="utf-8") as f:
     html_content = f.read()
@@ -106,6 +107,7 @@ if result.returncode != 0:
 print("ALARM! Ekran kirmizi. Kapatmak icin Cmd+W.")
 
 cleanup_pid(args.pid_file)
-time.sleep(2)
-os.unlink(tmp_path)
+time.sleep(5)
+if os.path.exists(tmp_path):
+    os.unlink(tmp_path)
 sys.stdout.flush()

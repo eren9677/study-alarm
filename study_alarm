@@ -105,8 +105,20 @@ while [ $# -gt 0 ]; do
             INSTALL_DIR="$(dirname "$(python3 -c "import os,sys; print(os.path.realpath(sys.argv[1]))" "${BASH_SOURCE[0]:-$0}")")"
             LINK="$HOME/bin/study_alarm"
             echo "study_alarm kaldırılıyor..."
+            if is_running; then
+                PID="$(cat "$PID_FILE")"
+                kill "$PID" 2>/dev/null
+                rm -f "$PID_FILE" "$LOG_FILE"
+                echo "Calisan alarm durduruldu (PID: $PID)."
+            fi
             [ -L "$LINK" ] && rm -f "$LINK" && echo "Symlink silindi: $LINK"
             [ -d "$INSTALL_DIR" ] && rm -rf "$INSTALL_DIR" && echo "Dosyalar silindi: $INSTALL_DIR"
+            for rc in "$HOME/.zshrc" "$HOME/.bash_profile" "$HOME/.profile"; do
+                if [ -f "$rc" ] && grep -q 'export PATH="$HOME/bin:$PATH"' "$rc" 2>/dev/null; then
+                    sed -i '' '\|export PATH="\$HOME/bin:\$PATH"|d' "$rc"
+                    echo "PATH satırı temizlendi: $rc"
+                fi
+            done
             echo "Kaldırma tamam. Güle güle!"
             exit 0
             ;;
@@ -199,6 +211,11 @@ if [ -n "$IN_MINUTES" ]; then
     fi
     if [ "$IN_MINUTES" -le 0 ]; then
         echo "HATA: --in icin pozitif bir sayi girin (en az 1 dakika)."
+        exit 1
+    fi
+    if [ "$IN_MINUTES" -gt 1440 ]; then
+        echo "HATA: --in en fazla 1440 dakika (24 saat) olabilir."
+        echo "Daha ileri tarih icin: study_alarm HH:MM"
         exit 1
     fi
     IN_MODE=true
