@@ -18,6 +18,7 @@ KULLANIM:
   study_alarm --test           5 saniye sonra test alarmı
   study_alarm --stop            Çalışan alarmı durdur
   study_alarm --status         Alarm durumunu göster
+  study_alarm --uninstall      Programı tamamen kaldır
   study_alarm --help           Bu yardımı göster
 
 SEÇENEKLER:
@@ -35,6 +36,7 @@ SEÇENEKLER:
   study_alarm --test           Hemen test et (5 saniye)
   study_alarm --stop           Durdur
   study_alarm --status         Duruma bak
+  study_alarm --uninstall      Programı sil
 
 NOT:
   - Terminali kapatabilirsin, alarm arka planda çalışır
@@ -99,6 +101,15 @@ while [ $# -gt 0 ]; do
             fi
             exit 0
             ;;
+        --uninstall)
+            INSTALL_DIR="$(dirname "$(python3 -c "import os,sys; print(os.path.realpath(sys.argv[1]))" "${BASH_SOURCE[0]:-$0}")")"
+            LINK="$HOME/bin/study_alarm"
+            echo "study_alarm kaldırılıyor..."
+            [ -L "$LINK" ] && rm -f "$LINK" && echo "Symlink silindi: $LINK"
+            [ -d "$INSTALL_DIR" ] && rm -rf "$INSTALL_DIR" && echo "Dosyalar silindi: $INSTALL_DIR"
+            echo "Kaldırma tamam. Güle güle!"
+            exit 0
+            ;;
         --status)
             if is_running; then
                 PID=$(cat "$PID_FILE")
@@ -159,7 +170,7 @@ done
 # --- Unknown flag ---
 if [ -n "$UNKNOWN" ]; then
     echo "HATA: Bilinmeyen secenek: $UNKNOWN"
-    echo "Kullanilabilir secenekler: --help, --stop, --status, --test, --force, --in, --message"
+    echo "Kullanilabilir secenekler: --help, --stop, --status, --uninstall, --test, --force, --in, --message"
     exit 1
 fi
 
